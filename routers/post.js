@@ -8,7 +8,7 @@ router.get('/getAllComment/:postId',getAllComment);
 
 router.post('/createPost/:userId',createPost);
 router.post('/postLike/:postId',postLike);
-router.post('/getAllComment/:postId',postComment);
+router.post('/postComment/:postId',postComment);
 
 
 module.exports = router;

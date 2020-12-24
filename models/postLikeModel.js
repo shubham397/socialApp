@@ -4,8 +4,7 @@ var PostLike = mongoose.Schema({
     postId:{
         type:String,
     },
-    likeCount:{type:Number},
-    date:{type:Date}
+    likeCount:{type:Number, default:0}
 }) 
 
-let postLike = module.exports = mongoose.model('postLike', PostLike);
+let postLike = module.exports = mongoose.model('postlike', PostLike);

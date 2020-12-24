@@ -7,8 +7,7 @@ var PostComment = mongoose.Schema({
     comments:[{
         comment:{type:String},
         time:{type:Date}
-    }],
-    date:{type:Date}
+    }]
 }) 
 
 let postComment = module.exports = mongoose.model('postComment', PostComment);

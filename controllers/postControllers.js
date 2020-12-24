@@ -3,20 +3,13 @@ const postLikeModal = require('../models/postLikeModel');
 const postCommentModal = require('../models/postCommentModel');
 
 exports.getAllPost = (req, res)=>{
-    let name = req.body.name;
-    let email = req.body.email;
+    let postData = [];
+    postModal.find({}).then(result=>{
 
-    userModal.create({
-        "name":name,
-        "email":email
-    })
-    .then(user=>{
-        res.send("Login successful");
-    })
-    .catch((err)=>{
+    }).catch(err=>{
         console.log(err);
-        res.send("Something went wrong");
-    })
+        return res.send("Something went wrong");
+    });
 }
 
 // get All Comment by Post Id
@@ -24,59 +17,62 @@ exports.getAllComment = (req, res)=>{
     let postId = req.params.postId;
 
     postCommentModal.find({postId:postId}).then(result=>{
-        res.send(result);
+        return res.send(result);
     }).catch(err=>{
         console.log(err);
+        return res.send("Something went wrong");
     });
 }
 
+// create post by user ID
 exports.createPost = (req, res)=>{
-    let name = req.body.name;
-    let email = req.body.email;
+    let user = req.params.userId;
+    let title = req.body.title;
+    let description = req.body.description;
+    let images = req.files.images || [];
 
-    userModal.create({
-        "name":name,
-        "email":email
+    images.forEach((data)=>{
+        postModal.update(
+            {userId:user},
+            { $set:{userId:user, title:title, description:description, date:Date.now()},$push:{ 'images':{'fileName':data.name}}},
+            {new:true, upsert:true}).then(result=>{
+                console.log(result);
+            }).catch(err=>{
+                console.log(err);
+                res.send(err);
+            })
     })
-    .then(user=>{
-        res.send("Login successful");
-    })
-    .catch((err)=>{
-        console.log(err);
-        res.send("Something went wrong");
-    })
+    res.send("Insert Successfully")
 }
 
+// increase like by post id
 exports.postLike = (req, res)=>{
-    let name = req.body.name;
-    let email = req.body.email;
+    let post = req.params.postId;
 
-    userModal.create({
-        "name":name,
-        "email":email
-    })
-    .then(user=>{
-        res.send("Login successful");
-    })
-    .catch((err)=>{
-        console.log(err);
-        res.send("Something went wrong");
-    })
+    postLikeModal.findOneAndUpdate(
+        {postId:post},
+        {$set:{postId:post},$inc: {likeCount:1}}, 
+        {new:true, upsert: true}).then(result=>{
+            return res.send(result);
+        }).catch(err=>{
+            console.log(err);
+            return res.send("Something went wrong");
+        });
 }
 
-exports.postComment = (req, res)=>{
-    let name = req.body.name;
-    let email = req.body.email;
 
-    userModal.create({
-        "name":name,
-        "email":email
-    })
-    .then(user=>{
-        res.send("Login successful");
-    })
-    .catch((err)=>{
-        console.log(err);
-        res.send("Something went wrong");
-    })
+// create new comment by post id
+exports.postComment = (req, res)=>{
+    let post = req.params.postId;
+    let commentData = req.body.comment;
+
+    postCommentModal.findOneAndUpdate(
+        {postId:post},
+        {$push:{ 'comments':{'comment':commentData, 'time':Date.now()}}},
+        {new:true, upsert:true}).then(result=>{
+            return res.send(result);
+        }).catch(err=>{
+            console.log(err);
+            return res.send(err);
+        })
 }
