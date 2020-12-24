@@ -4,31 +4,38 @@ const postCommentModal = require('../models/postCommentModel');
 
 // get all post
 exports.getAllPost = (req, res)=>{
+    let page = Number(req.query.page);
+    let limit = Number(req.query.limit);
     let postData = [];
-    postModal.find({}).then(result=>{
-        result.forEach(async(post)=>{
-            let newPostData = {}
-            await postLikeModal.findOne({postId:post._id}).then(resultLike=>{
-                newPostData.likeCount = resultLike.likeCount;
-            }).catch(errLike=>{
-                console.log(errLike);
-                return res.send("Something went wrong");
-            })
-
-            await postCommentModal.findOne({postId:post._id}).then(resultComment=>{
-                newPostData.commentData = resultComment;
-                postData.push({
-                    post:post,
-                    likeCount:newPostData.likeCount,
-                    commentData:newPostData.commentData,
-                    commentCount:resultComment.comments.length
+    postModal.find({}).skip((page-1)*10).limit(limit).then(result=>{
+        if(result.length>0){
+            result.forEach(async(post)=>{
+                let newPostData = {}
+                await postLikeModal.findOne({postId:post._id}).then(resultLike=>{
+                    newPostData.likeCount = resultLike.likeCount;
+                }).catch(errLike=>{
+                    console.log(errLike);
+                    return res.send("Something went wrong");
                 })
-                res.send(postData);
-            }).catch(errLike=>{
-                console.log(errLike);
-                return res.send("Something went wrong");
+    
+                await postCommentModal.findOne({postId:post._id}).then(resultComment=>{
+                    newPostData.commentData = resultComment;
+                    postData.push({
+                        post:post,
+                        likeCount:newPostData.likeCount,
+                        commentData:newPostData.commentData,
+                        commentCount:resultComment.comments.length
+                    })
+                    return res.send(postData);
+                }).catch(errLike=>{
+                    console.log(errLike);
+                    return res.send("Something went wrong");
+                })
             })
-        })
+        }
+        else{
+            return res.send("No post found on given Page");
+        }
     }).catch(err=>{
         console.log(err);
         return res.send("Something went wrong");
@@ -38,10 +45,10 @@ exports.getAllPost = (req, res)=>{
 // get All Comment by Post Id
 exports.getAllComment = (req, res)=>{
     let postId = req.params.postId;
-    let page = Number(req.body.page);
-    let limit = 10;
+    let page = Number(req.query.page);
+    let limit = Number(req.query.limit);
 
-    postCommentModal.find({postId:postId}).then(result=>{
+    postCommentModal.find({postId:postId}).skip((page-1)*10).limit(limit).then(result=>{
         return res.send(result);
     }).catch(err=>{
         console.log(err);
