@@ -3,6 +3,6 @@ const router = express.Router();
 
 const {postLogin} = require('../controllers/userContollers') // controllers
 
-router.post('/login',postLogin);
+router.get('/login',postLogin);
 
 module.exports = router;

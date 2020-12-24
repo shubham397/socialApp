@@ -1,4 +1,6 @@
-const userModal = require('../models/userModel');
+const postModal = require('../models/postModel');
+const postLikeModal = require('../models/postLikeModel');
+const postCommentModal = require('../models/postCommentModel');
 
 exports.postLogin = (req, res)=>{
     let name = req.body.name;
