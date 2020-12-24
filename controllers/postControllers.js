@@ -2,6 +2,40 @@ const postModal = require('../models/postModel');
 const postLikeModal = require('../models/postLikeModel');
 const postCommentModal = require('../models/postCommentModel');
 
+
+function millisecondsToStr (milliseconds) {
+    // TIP: to find current time in milliseconds, use:
+    // var  current_time_milliseconds = new Date().getTime();
+
+    function numberEnding (number) {
+        return (number > 1) ? 's' : '';
+    }
+
+    var temp = Math.floor(milliseconds / 1000);
+    var years = Math.floor(temp / 31536000);
+    if (years) {
+        return years + ' year' + numberEnding(years)+ ' ago';
+    }
+    //TODO: Months! Maybe weeks? 
+    var days = Math.floor((temp %= 31536000) / 86400);
+    if (days) {
+        return days + ' day' + numberEnding(days)+ ' ago';
+    }
+    var hours = Math.floor((temp %= 86400) / 3600);
+    if (hours) {
+        return hours + ' hour' + numberEnding(hours)+ ' ago';
+    }
+    var minutes = Math.floor((temp %= 3600) / 60);
+    if (minutes) {
+        return minutes + ' minute' + numberEnding(minutes)+ ' ago';
+    }
+    var seconds = temp % 60;
+    if (seconds) {
+        return seconds + ' second' + numberEnding(seconds)+ ' ago';
+    }
+    return 'less than a second'; //'just now' //or other string you like;
+}
+
 // get all post
 exports.getAllPost = (req, res)=>{
     let page = Number(req.query.page);
@@ -10,6 +44,9 @@ exports.getAllPost = (req, res)=>{
     postModal.find({}).skip((page-1)*10).limit(limit).then(result=>{
         if(result.length>0){
             result.forEach(async(post)=>{
+                let firstDate = new Date(post.date)
+                let secondDate = new Date(Date.now())
+                let timeDifference = Math.abs(secondDate.getTime() - firstDate.getTime());
                 let newPostData = {}
                 await postLikeModal.findOne({postId:post._id}).then(resultLike=>{
                     newPostData.likeCount = resultLike.likeCount;
@@ -20,8 +57,10 @@ exports.getAllPost = (req, res)=>{
     
                 await postCommentModal.findOne({postId:post._id}).then(resultComment=>{
                     newPostData.commentData = resultComment;
+
                     postData.push({
                         post:post,
+                        time:millisecondsToStr(timeDifference),
                         likeCount:newPostData.likeCount,
                         commentData:newPostData.commentData,
                         commentCount:resultComment.comments.length
