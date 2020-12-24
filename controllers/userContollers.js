@@ -6,7 +6,8 @@ exports.postLogin = (req, res)=>{
 
     userModal.create({
         "name":name,
-        "email":email
+        "email":email,
+        "date":Date.now()
     })
     .then(user=>{
         res.send("Login successful");
